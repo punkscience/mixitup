@@ -13,13 +13,48 @@ import (
 )
 
 func main() {
-	if len(os.Args) != 3 {
-		fmt.Println("Usage: mixitup <source> <destination>")
+	var source = ""
+	var destination = ""
+
+	// Look for a confif file in the user's home configs folder
+	// If it exists, read the source and destination from the config file
+	homeFolder, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Println("Error getting user home directory:", err)
 		return
 	}
+	configFile := filepath.Join(homeFolder, ".config", "mixitup", "config")
+	if _, err := os.Stat(configFile); err == nil {
+		// Config file exists
+		file, err := os.Open(configFile)
+		if err != nil {
+			fmt.Println("Error opening config file:", err)
+			return
+		}
+		defer file.Close()
 
-	source := os.Args[1]
-	destination := os.Args[2]
+		var source, destination string
+		_, err = fmt.Fscanf(file, "source=%s\n", &source)
+		if err != nil {
+			fmt.Println("Error reading source from config file:", err)
+			return
+		}
+		_, err = fmt.Fscanf(file, "destination=%s\n", &destination)
+
+		log.Println("Source:", source)
+		log.Println("Destination:", destination)
+	}
+
+	if source == "" && destination == "" {
+
+		if len(os.Args) != 3 {
+			source = os.Args[1]
+			destination = os.Args[2]
+		} else {
+			fmt.Println("Usage: mixitup <source> <destination>")
+			return
+		}
+	}
 
 	log.Println("Scanning source directory for music files...")
 	musicFiles, err := findMusicFiles(source)
