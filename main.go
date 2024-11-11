@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"golang.org/x/sys/windows"
+	"golang.org/x/sys/unix"
 )
 
 func main() {
@@ -20,14 +21,22 @@ func main() {
 	source := os.Args[1]
 	destination := os.Args[2]
 
+	log.Println("Scanning source directory for music files...")
 	musicFiles, err := findMusicFiles(source)
 	if err != nil {
 		fmt.Println("Error finding music files:", err)
 		return
 	}
 
+	if len(musicFiles) == 0 {
+		fmt.Println("No music files found in source directory. Stopping.")
+		return
+	}
+
+	log.Println("Shuffling...")
 	rand.Shuffle(len(musicFiles), func(i, j int) { musicFiles[i], musicFiles[j] = musicFiles[j], musicFiles[i] })
 
+	log.Println("Copying music files to ", destination)
 	for _, file := range musicFiles {
 		if !copyFile(file, destination) {
 			break
@@ -62,7 +71,7 @@ func copyFile(src, dstDir string) bool {
 
 	// If the destination does not have enough space, return false
 	if !hasEnoughSpace(dstDir, fileSize) {
-		fmt.Println("Not enough space in destination")
+		fmt.Println("No more space on destination. Stopping.")
 		return false
 	}
 
@@ -94,8 +103,14 @@ func copyFile(src, dstDir string) bool {
 }
 
 func hasEnoughSpace(path string, fileSize int) bool {
-	var freeBytesAvailable, totalNumberOfBytes, totalNumberOfFreeBytes uint64
-	err := windows.GetDiskFreeSpaceEx(windows.StringToUTF16Ptr(path), &freeBytesAvailable, &totalNumberOfBytes, &totalNumberOfFreeBytes)
+	var freeBytesAvailable uint64
+	var stat unix.Statfs_t
+	err := unix.Statfs(path, &stat)
+	if err != nil {
+		fmt.Println("Error getting filesystem stats:", err)
+		return false
+	}
+	freeBytesAvailable = stat.Bavail * uint64(stat.Bsize)
 	if err != nil {
 		fmt.Println("Error getting filesystem stats:", err)
 		return false
