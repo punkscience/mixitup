@@ -33,7 +33,6 @@ func main() {
 		}
 		defer file.Close()
 
-		var source, destination string
 		_, err = fmt.Fscanf(file, "source=%s\n", &source)
 		if err != nil {
 			fmt.Println("Error reading source from config file:", err)
@@ -88,6 +87,7 @@ func findMusicFiles(root string) ([]string, error) {
 		if !info.IsDir() && (strings.ToLower(filepath.Ext(path)) == ".flac" ||
 			strings.ToLower(filepath.Ext(path)) == ".mp3" ||
 			strings.ToLower(filepath.Ext(path)) == ".wav") {
+
 			musicFiles = append(musicFiles, path)
 		}
 		return nil
@@ -108,6 +108,12 @@ func copyFile(src, dstDir string) bool {
 	if !hasEnoughSpace(dstDir, fileSize) {
 		fmt.Println("No more space on destination. Stopping.")
 		return false
+	}
+
+	// Make sure the destionation doesn't already exist
+	if _, err := os.Stat(filepath.Join(dstDir, filepath.Base(src))); err == nil {
+		fmt.Println("File already exists in destination. Skipping.")
+		return true
 	}
 
 	srcFile, err := os.Open(src)
