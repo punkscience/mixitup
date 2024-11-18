@@ -1,14 +1,16 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
-	"syscall"
 
 	"github.com/punkscience/movemusic"
+	"github.com/ricochet2200/go-disk-usage/du"
+	"github.com/schollz/progressbar/v3"
 )
 
 func main() {
@@ -21,13 +23,15 @@ func main() {
 	destination := os.Args[2]
 
 	log.Println("Looking for music files at: ", source)
-	musicFiles, err := findMusicFiles(source)
+
+	pbar := progressbar.Default(-1, "Finding music files...")
+	musicFiles, err := findMusicFiles(source, pbar)
 	if err != nil {
 		fmt.Println("Error finding music files:", err)
 		return
 	}
+	pbar.Finish()
 
-	log.Println("Shuffling...")
 	rand.Shuffle(len(musicFiles), func(i, j int) { musicFiles[i], musicFiles[j] = musicFiles[j], musicFiles[i] })
 
 	log.Println("Copying music files to: ", destination)
@@ -37,18 +41,22 @@ func main() {
 			break
 		}
 
+		log.Println("Copying file: ", file)
 		filename, err := movemusic.CopyMusic(file, destination, false)
 
 		if err != nil {
-			fmt.Println("Error moving file:", err)
-			break
-		} else {
-			fmt.Println("Created file:", filename)
+			if errors.Is(err, movemusic.ErrFileExists) {
+				log.Println("File exists, skipping ", filename)
+			} else {
+				log.Println("Error copying file:", err)
+				break
+			}
+
 		}
 	}
 }
 
-func findMusicFiles(root string) ([]string, error) {
+func findMusicFiles(root string, pbar *progressbar.ProgressBar) ([]string, error) {
 	var musicFiles []string
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -56,6 +64,7 @@ func findMusicFiles(root string) ([]string, error) {
 		}
 		if !info.IsDir() && (filepath.Ext(path) == ".flac" || filepath.Ext(path) == ".mp3") {
 			musicFiles = append(musicFiles, path)
+			pbar.Add(1)
 		}
 		return nil
 	})
@@ -63,8 +72,7 @@ func findMusicFiles(root string) ([]string, error) {
 }
 
 func hasEnoughSpace(path string) bool {
-	var stat syscall.Statfs_t
-	syscall.Statfs(path, &stat)
-	// Check if there is at least 100MB free space
-	return stat.Bavail*uint64(stat.Bsize) > 100*1024*1024
+	usage := du.NewDiskUsage(path)
+
+	return usage.Available() >= 100*1024*1024
 }
