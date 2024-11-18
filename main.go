@@ -36,7 +36,15 @@ func main() {
 
 	log.Println("Copying music files to: ", destination)
 	for _, file := range musicFiles {
-		if !hasEnoughSpace(destination) {
+		// Get the file size
+		fileInfo, err := os.Stat(file)
+		if err != nil {
+			log.Println("Error getting file info:", err)
+			break
+		}
+
+		// Check if there is enough space in the destination
+		if !hasEnoughSpace(destination, fileInfo.Size()) {
 			log.Println("Not enough space in destination")
 			break
 		}
@@ -71,8 +79,8 @@ func findMusicFiles(root string, pbar *progressbar.ProgressBar) ([]string, error
 	return musicFiles, err
 }
 
-func hasEnoughSpace(path string) bool {
+func hasEnoughSpace(path string, size int64) bool {
 	usage := du.NewDiskUsage(path)
 
-	return usage.Available() >= 100*1024*1024
+	return usage.Available() >= uint64(size)
 }

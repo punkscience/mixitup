@@ -10,8 +10,8 @@ github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db h1:62I3jR2Em
 github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db/go.mod h1:l0dey0ia/Uv7NcFFVbCLtqEBQbrT4OCwCSKTEv6enCw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/punkscience/movemusic v1.0.5 h1:RabJ7EJFc6jNbmJUjSvJCf+t3TdpbJeJcnf3pbfdnnU=
-github.com/punkscience/movemusic v1.0.5/go.mod h1:pWCqL5OvIdRY1Xzw6FVUFO8F7sZfhlJKAUgJeX4LMdY=
+github.com/punkscience/movemusic v1.0.8 h1:1gOMExOLH7TSd3l9QMa3sTa7DWO/JkdBuXobKOV44jw=
+github.com/punkscience/movemusic v1.0.8/go.mod h1:pWCqL5OvIdRY1Xzw6FVUFO8F7sZfhlJKAUgJeX4LMdY=
 github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285 h1:d54EL9l+XteliUfUCGsEwwuk65dmmxX85VXF+9T6+50=
 github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285/go.mod h1:fxIDly1xtudczrZeOOlfaUvd2OPb2qZAPuWdU2BsBTk=
 github.com/rivo/uniseg v0.4.7 h1:WUdvkW8uEhrYfLC4ZzdpI2ztxP1I582+49Oc5Mq64VQ=

@@ -3,7 +3,7 @@ module mixitup
 go 1.23.1
 
 require (
-	github.com/punkscience/movemusic v1.0.5
+	github.com/punkscience/movemusic v1.0.8
 	github.com/ricochet2200/go-disk-usage/du v0.0.0-20210707232629-ac9918953285
 	github.com/schollz/progressbar/v3 v3.17.1
 )
