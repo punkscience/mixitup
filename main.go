@@ -54,7 +54,7 @@ func findMusicFiles(root string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && (filepath.Ext(path) == ".flac" || filepath.Ext(path) == ".mp3" || filepath.Ext(path) == ".wav") {
+		if !info.IsDir() && (filepath.Ext(path) == ".flac" || filepath.Ext(path) == ".mp3") {
 			musicFiles = append(musicFiles, path)
 		}
 		return nil
