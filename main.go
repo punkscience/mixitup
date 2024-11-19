@@ -7,6 +7,9 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"os/exec"
 
 	"github.com/punkscience/movemusic"
 	"github.com/ricochet2200/go-disk-usage/du"
@@ -49,15 +52,37 @@ func main() {
 			break
 		}
 
-		log.Println("Copying file: ", file)
-		filename, err := movemusic.CopyMusic(file, destination, false)
+		converted := false
+		if filepath.Ext(file) == ".flac" {
+			log.Println("Converting to MP3: ", file)
+			mp3File, err := convertToMP3(file)
+			if err != nil {
+				log.Println("Error converting to MP3:", err)
+			} else {
+				file = mp3File
+				converted = true
+			}
+		}
+
+		resultFileName, err := movemusic.CopyMusic(file, destination, false)
 
 		if err != nil {
 			if errors.Is(err, movemusic.ErrFileExists) {
-				log.Println("File exists, skipping ", filename)
+				log.Println("File exists, skipping ", resultFileName)
 			} else {
 				log.Println("Error copying file:", err)
 				break
+			}
+
+		} else {
+			log.Println("Copied ", resultFileName)
+		}
+
+		if converted {
+			log.Println("Removing temporary file: ", file)
+			err = os.Remove(file)
+			if err != nil {
+				log.Println("Error removing temporary file:", err)
 			}
 
 		}
@@ -83,4 +108,30 @@ func hasEnoughSpace(path string, size int64) bool {
 	usage := du.NewDiskUsage(path)
 
 	return usage.Available() >= uint64(size)
+}
+
+func convertToMP3(sourceFile string) (string, error) {
+	// Get the user's home folder
+	home, err := os.UserHomeDir()
+
+	if err != nil {
+		return "", err
+	}
+
+	tempFolder := filepath.Join(home, ".mixitup-conversion")
+	err = os.MkdirAll(tempFolder, os.ModePerm)
+	if err != nil {
+		return "", err
+	}
+
+	tempFileName := filepath.Join(tempFolder, strings.TrimSuffix(filepath.Base(sourceFile), filepath.Ext(sourceFile))+".mp3")
+	//log.Println("Temp file name: ", tempFileName)
+	cmd := exec.Command("ffmpeg", "-i", sourceFile, tempFileName)
+
+	err = cmd.Run()
+	if err != nil {
+		return "", err
+	}
+
+	return tempFileName, nil
 }
